@@ -1,0 +1,35 @@
+
+from datetime import datetime
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+import requests
+
+def post_request(url, body):
+    response = requests.post(url, json=body)
+    return response.json()
+
+def process_response(**kwargs):
+    url = "https://example.com/api/endpoint"
+    body = {
+        "key1": "value1",
+        "key2": "value2"
+    }
+    response = post_request(url, body)
+    print(response)
+
+default_args = {
+    'start_date': datetime(2023, 5, 15),
+}
+
+dag = DAG(
+    'post_request_dag',
+    default_args=default_args,
+    schedule_interval=None
+)
+
+post_task = PythonOperator(
+    task_id='post_task',
+    provide_context=True,
+    python_callable=process_response,
+    dag=dag
+)
